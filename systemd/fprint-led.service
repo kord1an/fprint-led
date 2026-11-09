@@ -1,0 +1,50 @@
+[Unit]
+Description=Fingerprint verification LED indicator
+Wants=dbus.socket
+After=dbus.socket dbus.service
+Before=display-manager.service
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=root
+Group=root
+ExecStartPre=/usr/bin/python3 -BEs /usr/local/libexec/fprint-led/led_state.py --restore /run/fprint-led/led-state.json
+ExecStart=/usr/bin/python3 -BEs /usr/local/libexec/fprint-led/fprint_led.py --config /etc/fprint-led.conf --state-file /run/fprint-led/led-state.json
+ExecStopPost=/usr/bin/python3 -BEs /usr/local/libexec/fprint-led/led_state.py --restore /run/fprint-led/led-state.json
+Restart=on-failure
+RestartSec=2
+RestartPreventExitStatus=2
+TimeoutStartSec=15
+TimeoutStopSec=5
+RuntimeDirectory=fprint-led
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
+UMask=0077
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fprint-led
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+ReadWritePaths=/sys/class/leds/hda::micmute/brightness /sys/class/leds/hda::micmute/trigger
+
+[Install]
+WantedBy=multi-user.target

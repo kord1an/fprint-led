@@ -1,0 +1,30 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Install distribution Python bindings
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y python3-gi
+      - name: Unit tests (no system bus or LED access)
+        run: /usr/bin/python3 -m unittest discover -v
+      - name: Shell syntax
+        run: bash -n install-service.sh
+      - name: Configuration and command-line interface
+        run: |
+          /usr/bin/python3 fprint_led.py --help
+          /usr/bin/python3 led_state.py --help
+          /usr/bin/python3 -c 'from fprint_led import parse_args; parse_args(["--config", "fprint-led.conf"])'
